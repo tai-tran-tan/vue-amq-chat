@@ -4,6 +4,7 @@ import App from './App.vue'
 import Chat from './components/chat/Chat.vue'
 import Portal from './components/portal/Portal.vue'
 
+
 const router = createRouter({
     history: createWebHashHistory(),
     routes: [

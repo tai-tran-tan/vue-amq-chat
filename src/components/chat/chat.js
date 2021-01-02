@@ -1,17 +1,21 @@
 import Stomp from 'stompjs';
+import Message from '../message/Message.vue';
 
 var client = undefined;
 
 export default {
+    props: {
+        name: String,
+        group: String
+    },
+    components: {
+        Message,
+    },
     data() {
         return {
             messages: [],
             message: ''
         }
-    },
-    props: {
-        name: String,
-        group: String
     },
     created() {
         this.connect(this.name, this.group);
@@ -24,17 +28,23 @@ export default {
             let _self = this;
             let onconnect = function (frame) {
                 console.log('connected to server!');
-                client.subscribe(group, (msg) => _self.messageHandler(msg.body));
+                client.subscribe(group, (msg) => _self.messageHandler(msg));
             };
             client.connect(user, '', onconnect);
         },
         messageHandler(msg) {
-            this.messages.push(JSON.parse(msg));
+            const payload = JSON.parse(msg.body);
+            payload['id'] = msg.headers["message-id"];
+            this.messages.push(payload);
         },
 
         sendMessage() {
-            client.send(this.group, {}, JSON.stringify({message: this.message, user: this.name}));
-            this.message = '';
+            if (this.message) {
+                client.send(this.group, {}, JSON.stringify({ message: this.message, user: this.name, id: null }));
+                this.message = '';
+            } else {
+                console.log('Emty message is ignored!')
+            }
         }
 
     }
