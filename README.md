@@ -1,7 +1,7 @@
 # vue-chat
 A sample chat application using VueJS, ActiveMQ and Stomp over websocket
 
-
+<img src="./screenshot.png" style="zoom:50%;" />
 
 ## Backend setup
 
