@@ -102,3 +102,14 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+
+
+## MVP plan
+
+- [x] Login as Guest
+- [x] User able to Join/Leave chat group, Join/Leave notification
+- [ ] Save the groups and rejoin
+- [ ] Redeliver the message after user join the group
+- [ ] "User is typing..." status
+- [ ] User authentication
