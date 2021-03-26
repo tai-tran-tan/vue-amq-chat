@@ -10,13 +10,7 @@
     />
     <br />
     <label for="group">Group you wanna join:</label>
-    <input
-      required
-      type="text"
-      id="group"
-      placeholder="Pizza Lovers"
-      v-model.trim="group"
-    />
+    <SelectButton v-model="value1" :options="options" />
     <br />
     <button>Start chat</button>
   </form>

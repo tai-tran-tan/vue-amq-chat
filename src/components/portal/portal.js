@@ -1,7 +1,9 @@
+import SelectButton from 'primevue/selectbutton';
 export default {
+    components: {SelectButton},
     data() {
         return {
-            name: '',
+            name: 'Bob',
             group: ''
         }
     },
