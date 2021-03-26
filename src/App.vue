@@ -6,8 +6,8 @@
 </template>
 
 <script>
-import Portal from './components/portal/Portal';
-import Chat from './components/chat/Chat';
+import Portal from './components/portal/Portal.vue';
+import Chat from './components/chat/Chat.vue';
 
 export default {
   data() {
