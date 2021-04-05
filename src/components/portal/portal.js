@@ -18,9 +18,8 @@ export default {
             // this.$router.push({path: '/chat', query : {name: this.group, group: this.group}});
         },
         activate(group) {
-            group['user'] = this.name;
             this.group = group;
-            this.$router.push({ name: 'chat-view', params: group });
+            this.$router.push({ name: 'chat-view', params: {group: group.group, user: this.name} });
             console.log('activating', group);
         }
     }

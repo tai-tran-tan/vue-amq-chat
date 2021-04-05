@@ -15,7 +15,6 @@ export default {
     },
 
     mounted() {
-        // console.log('props', this.group);
         client = new Mqtt.Client(location.hostname, 61616, "clientId");
         this.connect(this.user, this.group);
         window.addEventListener('beforeunload', () => client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null }));
@@ -34,43 +33,41 @@ export default {
             let onConnect = () => {
                 // Once a connection has been made, make a subscription and send a message.
                 console.log("onConnect");
-                client.subscribe("/topic/#");
-                let message = new Mqtt.Message("Hello");
-                message.destinationName = "/topic/#";
+                const topic = "my/topic/#";
+                client.subscribe(topic);
+                let message = new Mqtt.Message("connected to " + topic);
+                message.destinationName = "my/topic/";
                 client.send(message);
             }
 
             // called when the client loses its connection
-            client.onConnectionLost = function onConnectionLost(responseObject) {
+            client.onConnectionLost = (responseObject) => {
                 console.log("onConnectionLost:", responseObject);
             }
             
             // called when a message arrives
-            client.onMessageArrived = function onMessageArrived(message) {
-                console.log("onMessageArrived:" + message.payloadString);
+            client.onMessageArrived = (message) => {
+                console.log("onMessageArrived:", message.topic, message.payloadString);
+                this.messageHandler(message);
             }
 
             // connect the client
             client.connect({
                 onSuccess: onConnect, 
-                mqttVersion: 4,
-                userName: 'tttai',
-                password: '244466666'
+                mqttVersion: 4
             });
-
-            // client.connect(user, onconnect);
         },
         messageHandler(msg) {
-            const payload = JSON.parse(msg.body);
-            payload['id'] = msg.headers["message-id"];
+            const payload = {message: msg.payloadString, user: this.user}
+            // payload['id'] = msg.headers["message-id"];
             this.messages.push(payload);
         },
 
         sendMessage() {
             if (this.message) {
-                const payload = { message: this.message, user: this.user, id: null };
-                let msg = new Mqtt.Message(JSON.stringify(payload));
-                client.publish(this.group, msg);
+                let msg = new Mqtt.Message(this.message);
+                msg.destinationName = 'my/topic/' + this.group;
+                client.send(msg);
                 this.message = '';
             } else {
                 console.log('Emty message is ignored!')
