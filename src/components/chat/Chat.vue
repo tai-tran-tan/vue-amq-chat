@@ -1,6 +1,6 @@
 <template>
   <div class="chatContainer">
-    <p class="chatHeader">{{ name }} in {{ group }} group</p>
+    <p class="chatHeader">{{ group }} lovers</p>
     <div class="messagesListWrapper">
       <div>
         <Message
@@ -8,7 +8,7 @@
           :key="index"
           :message="item.message"
           :user="item.user"
-          :owner="item.user === name"
+          :owner="item.user === user"
         />
       </div>
     </div>

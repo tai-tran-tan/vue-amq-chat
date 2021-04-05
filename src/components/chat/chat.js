@@ -1,12 +1,9 @@
 import Message from '../message/Message.vue';
-import StompClient from '../../js/StompClient';
+import Mqtt from 'paho-mqtt';
 
 let client = null;
 export default {
-    props: {
-        name: String,
-        group: String
-    },
+    props: ['user', 'group'],
     components: {
         Message,
     },
@@ -18,27 +15,50 @@ export default {
     },
 
     mounted() {
-        let _self = this;
-        client = new StompClient();
-        this.connect(this.name, this.group);
-        window.addEventListener('beforeunload', () => client.send(_self.group, { message: `${_self.name} has left`, user: 'admin', id: null }));
+        // console.log('props', this.group);
+        client = new Mqtt.Client(location.hostname, 61616, "clientId");
+        this.connect(this.user, this.group);
+        window.addEventListener('beforeunload', () => client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null }));
     },
+    
     beforeUnmount() {
-        let _self = this;
-        client.disconnect(function() {
-            client.send(_self.group, { message: `${_self.name} has left`, user: 'admin', id: null })
-        });
+        // client.disconnect(() => {
+        //     client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null })
+        // });
     },
     methods: {
         connect(user, group) {
             console.log(`connecting user ${user} to group ${group}`);
-            let _self = this;
-            let onconnect = function (frame) {
-                console.log('connected to server!');
-                client.subscribe(group, (msg) => _self.messageHandler(msg));
-                client.send(_self.group, { message: `${user} has joined`, user: 'admin', id: null });
-            };
-            client.connect(user, onconnect);
+
+
+            let onConnect = () => {
+                // Once a connection has been made, make a subscription and send a message.
+                console.log("onConnect");
+                client.subscribe("/topic/#");
+                let message = new Mqtt.Message("Hello");
+                message.destinationName = "/topic/#";
+                client.send(message);
+            }
+
+            // called when the client loses its connection
+            client.onConnectionLost = function onConnectionLost(responseObject) {
+                console.log("onConnectionLost:", responseObject);
+            }
+            
+            // called when a message arrives
+            client.onMessageArrived = function onMessageArrived(message) {
+                console.log("onMessageArrived:" + message.payloadString);
+            }
+
+            // connect the client
+            client.connect({
+                onSuccess: onConnect, 
+                mqttVersion: 4,
+                userName: 'tttai',
+                password: '244466666'
+            });
+
+            // client.connect(user, onconnect);
         },
         messageHandler(msg) {
             const payload = JSON.parse(msg.body);
@@ -48,13 +68,14 @@ export default {
 
         sendMessage() {
             if (this.message) {
-                client.send(this.group,{ message: this.message, user: this.name, id: null });
+                const payload = { message: this.message, user: this.user, id: null };
+                let msg = new Mqtt.Message(JSON.stringify(payload));
+                client.publish(this.group, msg);
                 this.message = '';
             } else {
                 console.log('Emty message is ignored!')
             }
-        }
-
+        },
     }
 
 }
