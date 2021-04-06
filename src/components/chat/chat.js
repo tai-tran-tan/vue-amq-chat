@@ -1,11 +1,15 @@
 import Message from '../message/Message.vue';
 import Mqtt from 'paho-mqtt';
+import { v4 as uuidv4 } from 'uuid';
 
 let client = null;
 export default {
-    props: ['user', 'group'],
+    props: {
+        user: String, 
+        group: Object,
+    },
     components: {
-        Message,
+        Message
     },
     data() {
         return {
@@ -15,9 +19,9 @@ export default {
     },
 
     mounted() {
-        client = new Mqtt.Client(location.hostname, 61616, "clientId");
+        client = new Mqtt.Client(location.hostname, 61616, uuidv4());
         this.connect(this.user, this.group);
-        window.addEventListener('beforeunload', () => client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null }));
+        // window.addEventListener('beforeunload', () => client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null }));
     },
     
     beforeUnmount() {
@@ -27,16 +31,14 @@ export default {
     },
     methods: {
         connect(user, group) {
-            console.log(`connecting user ${user} to group ${group}`);
-
-
+            console.log(`connecting user ${user} to group ${group.id}`);
             let onConnect = () => {
                 // Once a connection has been made, make a subscription and send a message.
                 console.log("onConnect");
                 const topic = "my/topic/#";
                 client.subscribe(topic);
-                let message = new Mqtt.Message("connected to " + topic);
-                message.destinationName = "my/topic/";
+                let message = new Mqtt.Message(`${user} have joined ${group.name}`);
+                message.destinationName = "my/topic/" + group.id;
                 client.send(message);
             }
 
@@ -66,7 +68,7 @@ export default {
         sendMessage() {
             if (this.message) {
                 let msg = new Mqtt.Message(this.message);
-                msg.destinationName = 'my/topic/' + this.group;
+                msg.destinationName = 'my/topic/' + this.group.id;
                 client.send(msg);
                 this.message = '';
             } else {

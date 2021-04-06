@@ -1,15 +1,17 @@
+import Chat from '../chat/Chat.vue';
 export default {
+    components: { Chat },
     data() {
         return {
             name: 'Bob',
             group:'',
             groupList: [{
                 id: 'group1',
-                group: 'Pizza'
+                name: 'Pizza'
             },
             {
                 id: 'group2',
-                group: 'Pho'
+                name: 'Pho'
             }]
         }
     },
@@ -19,7 +21,7 @@ export default {
         },
         activate(group) {
             this.group = group;
-            this.$router.push({ name: 'chat-view', params: {group: group.group, user: this.name} });
+            // this.$router.push({ name: 'chat-view', params: {id: group.id, group: group.group, user: this.name} });
             console.log('activating', group);
         }
     }

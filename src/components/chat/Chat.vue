@@ -1,6 +1,6 @@
 <template>
   <div class="chatContainer">
-    <p class="chatHeader">{{ group }} lovers</p>
+    <p class="chatHeader">{{ group.name }} lovers</p>
     <div class="messagesListWrapper">
       <div>
         <Message
