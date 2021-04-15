@@ -23,6 +23,15 @@ export default {
         this.connect(this.user, this.group);
         // window.addEventListener('beforeunload', () => client.send(this.group, { message: `${this.user} has left`, user: 'admin', id: null }));
     },
+
+    watch: {
+        group: function(val) {
+            const payload = JSON.stringify({message: `${this.user} have joined ${this.group.name}`, user: 'admin'})
+            let message = new Mqtt.Message(payload);
+            message.destinationName = "my/topic/" + this.group.id;
+            client.send(message);
+        }
+    },
     
     beforeUnmount() {
         // client.disconnect(() => {
@@ -37,7 +46,8 @@ export default {
                 console.log("onConnect");
                 const topic = "my/topic/#";
                 client.subscribe(topic);
-                let message = new Mqtt.Message(`${user} have joined ${group.name}`);
+                const payload = JSON.stringify({message: `${user} have joined ${group.name}`, user: 'admin'})
+                let message = new Mqtt.Message(payload);
                 message.destinationName = "my/topic/" + group.id;
                 client.send(message);
             }
@@ -50,7 +60,7 @@ export default {
             // called when a message arrives
             client.onMessageArrived = (message) => {
                 console.log("onMessageArrived:", message.topic, message.payloadString);
-                this.messageHandler(message);
+                this.messageHandler(message.payloadString);
             }
 
             // connect the client
@@ -60,14 +70,17 @@ export default {
             });
         },
         messageHandler(msg) {
-            const payload = {message: msg.payloadString, user: this.user}
             // payload['id'] = msg.headers["message-id"];
-            this.messages.push(payload);
+            try {
+                this.messages.push(JSON.parse(msg));
+            } catch (e) {
+                console.warn(`Can not process message '${msg}'. Ignored!`, e);
+            }
         },
 
         sendMessage() {
             if (this.message) {
-                let msg = new Mqtt.Message(this.message);
+                let msg = new Mqtt.Message(JSON.stringify({message: this.message, user: this.user}));
                 msg.destinationName = 'my/topic/' + this.group.id;
                 client.send(msg);
                 this.message = '';
